@@ -160,22 +160,20 @@ class TransactionAPIView(APIView):
             description = serializer.validated_data.get('description', '')
  
             try:
+                balance_amount= None
                 account = Account.objects.get(account_number=account_number)
                 if transaction_type == 'DEPOSIT':
                     if amount > self.TRANSACTION_LIMIT:
                         return Response({"message": f"Deposit amount exceeds the transaction limit of {self.TRANSACTION_LIMIT}"}, status=status.HTTP_400_BAD_REQUEST)
                    
-                    account.deposit(amount)
+                    balance_amount=account.deposit(amount)
                     message = "Deposit successful"
                 elif transaction_type == 'WITHDRAWAL':
                     if amount > self.TRANSACTION_LIMIT:
                         return Response({"error": f"Withdrawal amount exceeds the transaction limit of {self.TRANSACTION_LIMIT}"}, status=status.HTTP_400_BAD_REQUEST)
                     if amount > account.balance:
                         return Response({"message": "Insufficient funds"}, status=status.HTTP_400_BAD_REQUEST)
-                    account.withdraw(amount)
-                    if amount > account.balance:
-                        return Response({"message": "Insufficient funds"}, status=status.HTTP_400_BAD_REQUEST)
-                    account.withdraw(amount)
+                    balance_amount = account.withdraw(amount)
                     message = "Withdrawal successful"
                     budget = Budget.objects.filter(name=description).first()
                     if budget:
@@ -192,7 +190,7 @@ class TransactionAPIView(APIView):
                     return Response({"message": "Invalid transaction type"}, status=status.HTTP_400_BAD_REQUEST)
  
                 transaction = Transaction.objects.create(account=account, transaction_type=transaction_type, amount=amount, description=description)
-                return Response({"message": message}, status=status.HTTP_201_CREATED)
+                return Response({"message": message,**( {"balance":balance_amount} if balance_amount else{})}, status=status.HTTP_201_CREATED)
  
             except Account.DoesNotExist:
                 return Response({"message": "Account not found"}, status=status.HTTP_404_NOT_FOUND)

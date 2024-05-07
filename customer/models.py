@@ -21,11 +21,13 @@ class Account(models.Model):
         if amount > 0:
             self.balance += amount
             self.save()
+            return self.balance
 
     def withdraw(self, amount):
         if 0 < amount <= self.balance:
             self.balance -= amount
             self.save()
+            return self.balance if self.balance else str( self.balance )
     
 
     

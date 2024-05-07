@@ -18,11 +18,6 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
     email = models.EmailField(unique=True)
     is_staff = models.BooleanField(default=False)
-
-class BlacklistedAccessToken(models.Model):
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    token = models.CharField(max_length=255, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expired = models.BooleanField(default=True)
+    date_of_birth = models.DateField(blank=False, null=False)
 
     

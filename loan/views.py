@@ -23,9 +23,27 @@ class InterestRateCreateAPIView(generics.CreateAPIView):
     # permission_classes = [IsAdminOrStaffUser]
     
 class InterestRateUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated,IsAdmin]
+    permission_classes = [IsAuthenticated, IsAdmin]
     queryset = InterestRate.objects.all()
     serializer_class = InterestRateSerializer
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"Message":"Deleted Successfully"},status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
+        instance.delete()
 
 class LoanApprovalAPIView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated,IsStaffOrAdmin]
